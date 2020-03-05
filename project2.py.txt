@@ -1,0 +1,42 @@
+import tensorflow as tf
+
+b=tf.Variable([-1.0],tf.float32)
+
+w1=tf.Variable([1.0],tf.float32)
+w2=tf.Variable([1.0],tf.float32)
+w3=tf.Variable([1.0],tf.float32)
+w4=tf.Variable([1.0],tf.float32)
+w5=tf.Variable([1.0],tf.float32)
+
+x1=tf.placeholder(tf.float32)
+x2=tf.placeholder(tf.float32)
+x3=tf.placeholder(tf.float32)
+x4=tf.placeholder(tf.float32)
+x5=tf.placeholder(tf.float32)
+
+linear_model = w1*x1+w2*x2+w3*x3+w4*x4+w5*x5+b
+
+init=tf.global_variables_initializer()
+
+sess=tf.Session()
+
+#sess.run(init)
+
+#print(sess.run(linear_model,{x:[1,2,3,4]}))
+
+y=tf.placeholder(tf.float32)
+
+squared_deltas=tf.square(linear_model-y)
+loss=tf.reduce_sum(squared_deltas)
+#print(sess.run(loss,{x:[1,2,3,4],y:[0,-1,-2,-3]}))
+
+optimizer=tf.train.GradientDescentOptimizer(1)
+
+train=optimizer.minimize(loss)
+
+sess.run(init)
+
+for i in range(1000):
+    sess.run(train,{x1:[29,30,34,36,35,31,29],x2:[1004,1005,1006,1005,1003,1004,1005],x3:[82,79,65,57,62,75,80],x4:[16,11,20,38,39,32,20],x5:[2,2,4,3,4,5,5], y:[1,1,4,17,26,1,0] })
+print(sess.run([w1,w2,w3,w4,w5,b]))
+sess.close()

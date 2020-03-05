@@ -1,0 +1,120 @@
+from keras.preprocessing.text import one_hot
+#from keras.preprocessing.text import pad_sequences
+from keras.preprocessing.text import text_to_word_sequence
+from keras.preprocessing.text import Tokenizer
+from keras.utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense,Input
+from keras.layers import Flatten
+from keras.layers.embeddings import Embedding
+from keras.utils.vis_utils import plot_model
+from keras.callbacks import History
+import pandas as pd
+import numpy as np
+from numpy import asarray
+from numpy import zeros
+#from prf1 import precision, recall, f1_score
+from keras.utils.vis_utils import plot_model
+#import pydot
+#import graphviz
+from keras import backend as K
+from keras.preprocessing import sequence
+from keras.layers import LSTM
+import numpy
+from sklearn.cross_validation import train_test_split
+#from sklearn.metrics import confusion_matrix
+#from confusionMetrics import plot_confusion_matrix
+import matplotlib.pyplot as plt
+from sklearn import metrics
+from keras.utils import np_utils
+#######Loading CSV file using Pandas
+history = History()
+df=pd.read_csv('C:\Users\lenovo\Desktop\6TH SEM PROJECT\DATASET\finaldata.csv',encoding(utf-8))
+a=list(df.columns)
+df1=df[[a[0],a[1],a[2],a[3],a[4]]]
+Y = df[a[6]]
+#Y=np_utils.to_categorical(Y_old)
+print(df)
+
+###Tokenizer
+'''
+tk=Tokenizer(filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n',lower=True, split=" ")
+tk.fit_on_texts(df1)
+index=tk.word_index
+print(index)
+x = tk.texts_to_sequences(df1)
+print (x)
+seed = 7
+numpy.random.seed(seed)
+##encoded_doc = tk.texts_to_matrix(df, mode='count')
+##print (encoded_doc)
+##max_length=15
+##padded_docs = sequence.pad_sequences(encoded_doc, maxlen=max_length, padding='pre')
+##print (padded_docs)
+vocab_size = len(index)
+print(vocab_size)
+encoded_docs=[one_hot(d,vocab_size) for d in df1] 
+print (encoded_docs)
+embedding_vecor_length =32
+padded_docs = sequence.pad_sequences(encoded_docs, maxlen=embedding_vecor_length, padding='pre')
+print (padded_docs)
+
+###################################
+embeddings_index = dict()
+f = open('glove.6B.100d.txt',encoding='utf-8') 
+for line in f:
+	values = line.split()
+	#print values
+	word = values[0]
+	#print word
+	coefs = asarray(values[1:], dtype='float32')
+	#print coefs
+	embeddings_index[word] = coefs
+f.close()
+print('Loaded %s word vectors.' % len(embeddings_index))
+# create a weight matrix for words in training docs
+embedding_matrix = zeros((vocab_size+1, 100))
+for word,i in tk.word_index.items():
+	embedding_vector = embeddings_index.get(word)
+	if embedding_vector is not None:
+		embedding_matrix[i] = embedding_vector
+		print (embedding_matrix[i])
+
+'''
+#######################################  
+#other_data_input= Input(shape=(5,))
+model = Sequential()
+
+'''
+model.add(Embedding(vocab_size+1, 100,weights=[embedding_matrix], input_length=embedding_vecor_length,trainable=False))
+model.add(LSTM(100,return_sequences=True, dropout = 0.2, recurrent_dropout = 0.2))
+model.add(LSTM(100, dropout = 0.2, recurrent_dropout = 0.2))
+'''
+
+model.add(Dense(50, activation='sigmoid', input_shape=(6,)))
+model.add(Dense(30, activation='sigmoid'))
+model.add(Dense(1))
+
+model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mse'])
+print(model.summary())
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(df1,Y, test_size=0.33, random_state=42)
+history1 = model.fit(X_train, Y_train,validation_data=(X_test,Y_test),epochs=2,batch_size=100,verbose=2, callbacks = [history])
+predictions = model.predict(X_test)
+'''
+b=np.zeros_like(predictions)
+b[np.arange(len(predictions)), predictions.argmax(1)]=1
+print( metrics.classification_report(Y_test,b))
+scores = model.evaluate(X_test, Y_test, verbose=0)
+# Final evaluation of the model
+scores = model.evaluate(X_test, Y_test, verbose=0)
+print("Accuracy: %.2f%%" % (scores[1]*100))
+'''
+plt.plot(history1.history['mean_squared_error'])
+plt.plot(history1.history['val_mean_squared_error'])
+#plt.plot(val_precision)
+plt.ylabel('Mean Squared Error')
+plt.xlabel('epoch')
+plt.legend(['train','test'])
+plt.show()
